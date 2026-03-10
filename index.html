@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>레벨업만이 살길 - 통합 효율 및 환생 플래너 V3.8 Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            background-color: #f8fafc; 
+            -webkit-tap-highlight-color: transparent;
+            color: #334155;
+        }
+
+        .maple-card { 
+            border-radius: 1.25rem; 
+            background: white; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #f1f5f9; 
+        }
+
+        input::-webkit-inner-spin-button,
+        input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .boss-check-item { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 2px solid #f1f5f9;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .boss-check-item.active { 
+            border-color: #ef4444; 
+            background-color: #fef2f2; 
+            color: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+        }
+
+        .tab-btn {
+            padding: 1rem;
+            font-weight: 800;
+            font-size: 0.875rem;
+            color: #94a3b8;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+            background: linear-gradient(to top, #eff6ff, transparent);
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #475569;
+            margin-top: 24px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
+
+        .input-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .custom-field {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        .custom-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        .select-field {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        .result-card {
+            background: #0f172a;
+            color: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-top: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .result-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+        }
+        .unit-label {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #94a3b8;
+            pointer-events: none;
+        }
+        .highlight-orange { color: #fb923c; }
+        .highlight-blue { color: #60a5fa; }
+        .highlight-green { color: #4ade80; }
+        .highlight-yellow { color: #facc15; }
+        
+        .apply-btn {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 800;
+            transition: all 0.2s;
+        }
+        .apply-btn:hover { background: #3b82f6; color: white; }
+    </style>
+</head>
+<body class="p-3 md:p-6 pb-24">
+
+<div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row items-center justify-between mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3">
+                <span class="text-4xl drop-shadow-sm">🍁</span> 레벨업만이 살길
+                <span class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest shadow-md shadow-blue-200">V3.8 Pro</span>
+            </h1>
+            <p class="text-slate-400 text-xs font-semibold mt-2 ml-1">정밀 경험치 분석 및 장기 환생 로드맵 가이드</p>
+        </div>
+        <div class="flex gap-4">
+            <button onclick="resetInputs()" class="px-5 py-2.5 text-slate-500 hover:text-red-500 transition text-sm font-bold bg-slate-50 hover:bg-red-50 rounded-xl">데이터 초기화</button>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Input Section (Sidebar) -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="maple-card p-6 border-t-4 border-t-blue-500">
+                <h2 class="text-[11px] font-black text-slate-400 mb-6 flex items-center gap-2 uppercase tracking-[0.25em]">1. 핵심 데이터 입력</h2>
+                
+                <div class="space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="relative">
+                            <label class="input-label ml-1">현재 레벨</label>
+                            <input type="number" id="curLevel" value="1" min="1" class="custom-field">
+                        </div>
+                        <div class="relative">
+                            <label class="input-label ml-1 text-blue-600">수동 분석 레벨</label>
+                            <input type="number" id="targetLevel" value="100" min="2" class="custom-field !bg-blue-50/50 !border-blue-100 !text-blue-700">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="input-label ml-1 text-red-500 uppercase">⏱️ 타임보스 적용 (경험치 x1.5)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="boss-check-item" id="btn-900" onclick="setBoss(900)">900초</div>
+                            <div class="boss-check-item" id="btn-1200" onclick="setBoss(1200)">1200초</div>
+                            <div class="boss-check-item" id="btn-1500" onclick="setBoss(1500)">1500초</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 pt-2">
+                        <div>
+                            <label class="input-label ml-1 text-purple-600 uppercase">분당 기본 경험치 (EPM)</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="relative">
+                                    <input type="number" id="epmJo" value="0" placeholder="0" class="custom-field !px-2 text-center text-xs">
+                                    <span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-black text-slate-300">조</span>
+                                </div>
+                                <div class="relative">
+                                    <input type="number" id="epmEok" value="15000" placeholder="0" class="custom-field !px-2 text-center text-xs">
+                                    <span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-black text-slate-300">억</span>
+                                </div>
+                                <div class="relative">
+                                    <input type="number" id="epmMan" value="0" placeholder="0" class="custom-field !px-2 text-center text-xs">
+                                    <span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-black text-slate-300">만</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-6">
+                            <label class="input-label ml-1 text-indigo-500 uppercase">SP 추가 보너스 (%)</label>
+                            <div class="relative">
+                                <input type="number" id="spBuffPercent" value="2000" class="custom-field !bg-indigo-50/30 !border-indigo-100 !text-indigo-700">
+                                <span class="unit-label">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Peak Efficiency Card -->
+            <div class="maple-card p-6 border-t-4 border-t-amber-500 bg-amber-50/30">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-[11px] font-black text-amber-600 uppercase tracking-widest">🔥 최고 효율 분석 (SP/min)</h2>
+                    <button id="peakApplyBtn" class="apply-btn">적용하기</button>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">권장 환생 레벨</p>
+                        <p id="peakLv" class="text-xl font-black text-amber-700">Lv.0</p>
+                    </div>
+                    <div class="flex-1 text-right">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">최고 효율</p>
+                        <p id="peakVal" class="text-lg font-black text-amber-600">0.00</p>
+                    </div>
+                </div>
+                <p class="text-[9px] text-amber-500 font-bold mt-3 leading-tight">* 현재 EPM과 SP보너스 기준, 분당 가장 많은 SP를 획득할 수 있는 황금 지점입니다.</p>
+            </div>
+        </div>
+
+        <!-- Result Content Area -->
+        <div class="lg:col-span-8 space-y-6">
+            <div class="flex border-b border-slate-200 bg-white rounded-t-3xl px-4 overflow-hidden shadow-sm">
+                <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn active flex-1">📈 실시간 효율 분석</button>
+                <button onclick="switchTab('planner')" id="tab-planner" class="tab-btn flex-1">🎯 중장기 환생 플래너</button>
+            </div>
+
+            <!-- TAB 1: Analytics -->
+            <div id="content-analytics" class="space-y-6 animate-in fade-in duration-300">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="maple-card p-5">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">남은 경험치</p>
+                        <p id="resTotalExp" class="text-sm font-black mt-2 text-slate-800 break-all">0</p>
+                    </div>
+                    <div class="maple-card p-5">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">1회 소요시간</p>
+                        <p id="resTotalTime" class="text-sm font-black mt-2 text-orange-600">0분</p>
+                    </div>
+                    <div class="maple-card p-5">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">분당 SP 효율</p>
+                        <p id="resSpEfficiency" class="text-sm font-black mt-2 text-purple-600">0</p>
+                    </div>
+                    <div class="maple-card p-5 bg-blue-600 text-white shadow-lg shadow-blue-200">
+                        <p class="text-[10px] font-black text-white/70 uppercase tracking-wider">수동 환생 보상</p>
+                        <p id="resOnceSP" class="text-base font-black mt-1">0 SP</p>
+                    </div>
+                </div>
+
+                <div class="maple-card overflow-hidden flex flex-col min-h-[450px]">
+                    <div class="px-6 py-4 border-b bg-slate-50/80 flex justify-between items-center">
+                        <h3 class="text-[11px] font-black text-slate-700 uppercase tracking-widest">Growth Timeline</h3>
+                        <span class="text-[10px] text-slate-400 font-medium">환생 시점 효율 체크용</span>
+                    </div>
+                    <div class="flex-1 overflow-y-auto max-h-[500px]">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-white shadow-sm z-10">
+                                <tr class="text-[10px] text-slate-400 font-black uppercase">
+                                    <th class="px-6 py-4 border-b">도달 레벨</th>
+                                    <th class="px-6 py-4 border-b">누적 획득 SP</th>
+                                    <th class="px-6 py-4 border-b text-right">구간 소요 시간</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailTable" class="text-[13px] divide-y divide-slate-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Planner -->
+            <div id="content-planner" class="hidden animate-in fade-in duration-300">
+                <div class="maple-card p-8 border-t-4 border-t-emerald-500">
+                    <h2 class="text-[11px] font-black text-slate-400 mb-8 uppercase tracking-[0.25em]">2. 목표 달성 시뮬레이션</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-4">
+                            <div class="section-title !mt-0">플레이어 환경</div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="input-label">일평균 플레이</label>
+                                    <div class="relative">
+                                        <input type="number" id="playHours" class="custom-field pr-12" value="24" min="0" max="24">
+                                        <span class="unit-label">시간</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="input-label">하루 환생수</label>
+                                    <div class="relative">
+                                        <input type="number" id="dailyGoalCount" class="custom-field pr-12" value="40" min="1">
+                                        <span class="unit-label">회</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="input-label">현재 보유 중인 SP</label>
+                                <div class="relative">
+                                    <input type="number" id="haveSp" class="custom-field" placeholder="0" value="0">
+                                    <span class="unit-label">SP</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="section-title !mt-0">장기 성장 목표</div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="input-label">현재/목표 전직</label>
+                                    <select id="curJob" class="custom-field select-field !py-2.5 !text-xs"></select>
+                                </div>
+                                <div>
+                                    <label class="input-label">&nbsp;</label>
+                                    <select id="tarJob" class="custom-field select-field !py-2.5 !text-xs"></select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="input-label">현재/목표 초월</label>
+                                    <select id="curT" class="custom-field select-field !py-2.5 !text-xs"></select>
+                                </div>
+                                <div>
+                                    <label class="input-label">&nbsp;</label>
+                                    <select id="tarT" class="custom-field select-field !py-2.5 !text-xs"></select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="input-label">현재/목표 초월력</label>
+                                    <select id="curP" class="custom-field select-field !py-2.5 !text-xs"></select>
+                                </div>
+                                <div>
+                                    <label class="input-label">&nbsp;</label>
+                                    <select id="tarP" class="custom-field select-field !py-2.5 !text-xs"></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card shadow-2xl shadow-blue-900/10">
+                        <div class="space-y-6">
+                            <div class="pb-5 border-b border-slate-700/50">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">💡 분석 결과: 스케줄링 환생 레벨</span>
+                                    <div class="flex items-center gap-3">
+                                        <span id="resRecomLv" class="text-xl font-black text-white">Lv.0</span>
+                                        <button id="recomApplyBtn" class="apply-btn !bg-white/20 !color-white">적용</button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-end">
+                                    <span class="text-sm font-bold highlight-yellow">회당 권장 소요 시간</span>
+                                    <span id="resRecomTime" class="text-2xl font-black highlight-yellow">0분</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-xs font-semibold">
+                                        <span class="text-slate-400">추천 레벨 기준 1회 SP</span>
+                                        <span id="resOnce" class="highlight-blue">0 SP</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs font-semibold">
+                                        <span class="text-slate-400">목표 달성 총 필요 SP</span>
+                                        <span id="resTotal" class="text-white">0 SP</span>
+                                    </div>
+                                    <div class="pt-2 mt-2 border-t border-slate-700/30 space-y-2">
+                                        <div class="flex justify-between text-sm font-bold">
+                                            <span class="text-slate-300">부족한 SP (목표 - 보유)</span>
+                                            <span id="resRemain" class="highlight-orange">0 SP</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-slate-800/50 rounded-2xl p-4 flex flex-col justify-center items-center border border-slate-700/50">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">남은 환생 횟수</p>
+                                    <div class="flex items-baseline gap-2">
+                                        <span id="resCount" class="text-4xl font-black highlight-green">0</span>
+                                        <span class="text-lg font-bold text-white">회</span>
+                                    </div>
+                                    <p id="resDaysNeeded" class="text-[11px] text-slate-500 mt-2 font-medium">데이터를 입력해주세요</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Data Constants ---
+    const JOBS = [
+        { name: "1차", cost: 0, lv: 1 }, { name: "2차", cost: 350, lv: 100 }, { name: "3차", cost: 3000, lv: 200 },
+        { name: "4차", cost: 9000, lv: 300 }, { name: "5차", cost: 21000, lv: 400 }, { name: "6차", cost: 72000, lv: 500 },
+        { name: "7차", cost: 252000, lv: 600 }
+    ];
+    const T_STEP_UNIT = 25000;
+    const P_STEP_UNIT = 100000;
+    const expertData = { 1: 100, 100: 74038024, 200: 8400330788, 300: 46210837835, 400: 159432642825, 500: 552179696726 };
+
+    let activeBossTime = 0;
+    let globalPeakLv = 100;
+    let globalRecomLv = 100;
+
+    function getExpForLevel(lv) {
+        if (lv <= 1) return 0n;
+        if (lv < 500) {
+            const anchors = Object.keys(expertData).map(Number).sort((a, b) => a - b);
+            let lower = 1, upper = 500;
+            for (let i = 0; i < anchors.length; i++) {
+                if (anchors[i] <= lv) lower = anchors[i];
+                if (anchors[i] > lv) { upper = anchors[i]; break; }
+            }
+            const ratio = Math.pow(expertData[upper] / expertData[lower], 1 / (upper - lower));
+            return BigInt(Math.floor(expertData[lower] * Math.pow(ratio, lv - lower)));
+        } else {
+            return BigInt(Math.floor(expertData[500] * Math.pow(1.0115, lv - 500)));
+        }
+    }
+
+    function formatBigInt(num) {
+        if (num === 0n) return "0";
+        if (num >= 1000000000000n) return (Number(num / 10000000000n) / 100).toFixed(2) + "조";
+        if (num >= 100000000n) return (Number(num / 1000000n) / 100).toFixed(2) + "억";
+        if (num >= 10000n) return (Number(num / 100n) / 100).toFixed(1) + "만";
+        return num.toString();
+    }
+
+    function getCumulativeCost(level, unit) { return (level * (level + 1) / 2) * unit; }
+
+    function formatTime(totalMinutes) {
+        if (totalMinutes <= 0 || isNaN(totalMinutes) || totalMinutes === Infinity) return "0분";
+        const d = Math.floor(totalMinutes / (24 * 60));
+        const h = Math.floor((totalMinutes % (24 * 60)) / 60);
+        const m = Math.round(totalMinutes % 60);
+        let res = "";
+        if (d > 0) res += d + "일 ";
+        if (h > 0) res += h + "시간 ";
+        res += m + "분";
+        return res || "0분";
+    }
+
+    function switchTab(tab) {
+        document.getElementById('content-analytics').classList.toggle('hidden', tab !== 'analytics');
+        document.getElementById('content-planner').classList.toggle('hidden', tab !== 'planner');
+        document.getElementById('tab-analytics').classList.toggle('active', tab === 'analytics');
+        document.getElementById('tab-planner').classList.toggle('active', tab === 'planner');
+        calculate();
+    }
+
+    function setBoss(seconds) {
+        activeBossTime = (activeBossTime === seconds) ? 0 : seconds;
+        document.querySelectorAll('.boss-check-item').forEach(el => el.classList.remove('active'));
+        if (activeBossTime > 0) document.getElementById('btn-' + activeBossTime).classList.add('active');
+        calculate();
+    }
+
+    function calculate() {
+        const curLv = parseInt(document.getElementById('curLevel').value) || 1;
+        const targetLvManual = parseInt(document.getElementById('targetLevel').value) || 2;
+        const spBuff = 1 + (parseFloat(document.getElementById('spBuffPercent').value || 0) / 100);
+        
+        const baseEpm = (BigInt(document.getElementById('epmJo').value || 0) * 1000000000000n) + 
+                        (BigInt(document.getElementById('epmEok').value || 0) * 100000000n) + 
+                        (BigInt(document.getElementById('epmMan').value || 0) * 10000n);
+        
+        const bossMult = activeBossTime > 0 ? ((activeBossTime * 1.5) + (3600 - activeBossTime)) / 3600 : 1;
+        const actualEpmNum = Number(baseEpm) * bossMult;
+        const actualEpmBig = baseEpm > 0n ? BigInt(Math.floor(actualEpmNum)) : 0n;
+
+        // --- 1. Peak Efficiency Finder (SP/min) ---
+        let maxSpMin = 0;
+        let peakLv = curLv;
+        let tempExpSum = 0n;
+        
+        // Scan up to a reasonable limit to find the absolute peak
+        for (let lv = curLv; lv <= 1000; lv++) {
+            tempExpSum += getExpForLevel(lv);
+            if (actualEpmBig > 0n) {
+                // Fixed: used tempExpSum (which is declared above) instead of tempExpAccum (which is declared later)
+                const mins = Number(tempExpSum) / Number(actualEpmBig);
+                const spGain = Math.floor((lv + 1) * 3 * spBuff);
+                const spMin = mins > 0 ? (spGain / mins) : 0;
+                if (spMin > maxSpMin) {
+                    maxSpMin = spMin;
+                    peakLv = lv + 1;
+                }
+            }
+        }
+        globalPeakLv = peakLv;
+        document.getElementById('peakLv').innerText = `Lv.${peakLv}`;
+        document.getElementById('peakVal').innerText = `${maxSpMin.toFixed(2)} SP/분`;
+
+        // --- 2. Analytics Tab (Manual) ---
+        let totalExpManual = 0n;
+        if (targetLvManual > curLv) {
+            for (let lv = curLv; lv < targetLvManual; lv++) totalExpManual += getExpForLevel(lv);
+        }
+        const timeManual = actualEpmBig > 0n ? (Number(totalExpManual) / Number(actualEpmBig)) : 0;
+        
+        document.getElementById('resTotalExp').innerText = formatBigInt(totalExpManual);
+        document.getElementById('resTotalTime').innerText = formatTime(timeManual);
+        const spManual = Math.floor(targetLvManual * 3 * spBuff);
+        document.getElementById('resOnceSP').innerText = spManual.toLocaleString() + " SP";
+        document.getElementById('resSpEfficiency').innerText = (timeManual > 0 ? (spManual / timeManual) : 0).toFixed(2) + " SP/분";
+
+        let tableHtml = '';
+        const step = Math.max(1, Math.ceil((targetLvManual - curLv) / 10));
+        let tempExpAccum = 0n;
+        for (let lv = curLv; lv < targetLvManual; lv++) {
+            tempExpAccum += getExpForLevel(lv);
+            if ((lv - curLv) % step === 0 || lv === targetLvManual - 1) {
+                const mins = actualEpmBig > 0n ? (Number(tempExpAccum) / Number(actualEpmBig)) : 0;
+                tableHtml += `<tr>
+                    <td class="px-6 py-4 font-bold">Lv.${lv+1}</td>
+                    <td class="px-6 py-4 text-indigo-600 font-bold">${Math.floor((lv+1)*3*spBuff).toLocaleString()} SP</td>
+                    <td class="px-6 py-4 text-right text-orange-500 font-bold">${formatTime(mins)}</td>
+                </tr>`;
+            }
+        }
+        document.getElementById('detailTable').innerHTML = tableHtml;
+
+        // --- 3. Planner Tab (Scheduling Recommendation) ---
+        const playH = parseFloat(document.getElementById('playHours').value) || 0;
+        const dailyGoalCount = parseInt(document.getElementById('dailyGoalCount').value) || 1;
+        const timePerRun = (playH * 60) / dailyGoalCount;
+        
+        const expPerRunTarget = BigInt(Math.floor(actualEpmNum * timePerRun));
+        let recomLv = curLv;
+        let recomExpSum = 0n;
+        
+        if (expPerRunTarget > 0n) {
+            for (let lv = curLv; lv < 5000; lv++) {
+                const e = getExpForLevel(lv);
+                if (recomExpSum + e > expPerRunTarget) break;
+                recomExpSum += e;
+                recomLv = lv + 1;
+            }
+        }
+        globalRecomLv = recomLv;
+
+        const spRecomOnce = Math.floor(recomLv * 3 * spBuff);
+        document.getElementById('resRecomLv').innerText = `Lv.${recomLv.toLocaleString()}`;
+        document.getElementById('resRecomTime').innerText = `${Math.round(timePerRun)}분`;
+        document.getElementById('resOnce').innerText = `${spRecomOnce.toLocaleString()} SP`;
+
+        const curJobIdx = parseInt(document.getElementById('curJob').value) || 0;
+        const tarJobIdx = parseInt(document.getElementById('tarJob').value) || 0;
+        let jobGap = 0;
+        for(let i = curJobIdx + 1; i <= tarJobIdx; i++) jobGap += JOBS[i].cost;
+        
+        const tGap = Math.max(0, getCumulativeCost(parseInt(document.getElementById('tarT').value), T_STEP_UNIT) - getCumulativeCost(parseInt(document.getElementById('curT').value), T_STEP_UNIT));
+        const pGap = Math.max(0, getCumulativeCost(parseInt(document.getElementById('tarP').value), P_STEP_UNIT) - getCumulativeCost(parseInt(document.getElementById('curP').value), P_STEP_UNIT));
+
+        const totalNeeded = jobGap + tGap + pGap;
+        const haveSp = parseInt(document.getElementById('haveSp').value) || 0;
+        const remainSp = Math.max(0, totalNeeded - haveSp);
+        const rebirthsNeeded = spRecomOnce > 0 ? Math.ceil(remainSp / spRecomOnce) : 0;
+
+        document.getElementById('resTotal').innerText = totalNeeded.toLocaleString() + " SP";
+        document.getElementById('resRemain').innerText = remainSp.toLocaleString() + " SP";
+        document.getElementById('resCount').innerText = rebirthsNeeded.toLocaleString();
+        
+        const days = dailyGoalCount > 0 ? (rebirthsNeeded / dailyGoalCount) : 0;
+        document.getElementById('resDaysNeeded').innerText = rebirthsNeeded > 0 ? `목표까지 약 ${days.toFixed(1)}일 소요 예상` : "이미 목표를 달성했습니다!";
+    }
+
+    function init() {
+        const curJob = document.getElementById('curJob');
+        const tarJob = document.getElementById('tarJob');
+        JOBS.forEach((j, i) => {
+            curJob.add(new Option(j.name, i));
+            tarJob.add(new Option(j.name, i));
+        });
+        tarJob.value = 6;
+
+        const selects = ['curT', 'tarT', 'curP', 'tarP'];
+        selects.forEach(id => {
+            const el = document.getElementById(id);
+            const limit = id.includes('T') ? 15 : 20;
+            const unit = id.includes('T') ? T_STEP_UNIT : P_STEP_UNIT;
+            for(let i=0; i<=limit; i++) {
+                const label = i === 0 ? "0단계" : `${i}단계 (+${(i*unit).toLocaleString()} SP)`;
+                el.add(new Option(label, i));
+            }
+        });
+
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', calculate);
+            el.addEventListener('change', calculate);
+        });
+
+        // Apply Buttons
+        document.getElementById('peakApplyBtn').onclick = () => {
+            document.getElementById('targetLevel').value = globalPeakLv;
+            calculate();
+        };
+        document.getElementById('recomApplyBtn').onclick = () => {
+            document.getElementById('targetLevel').value = globalRecomLv;
+            calculate();
+        };
+
+        calculate();
+    }
+
+    function resetInputs() { if(confirm("모든 데이터를 초기화하시겠습니까?")) location.reload(); }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>
